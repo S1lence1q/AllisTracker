@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="da">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Allis App</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d0d12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            primary: '#ff3f00',   /* International Orange (Streetwear/Premium Vibe) */
+            accent: '#ff5c28',    /* Lysere orange til hover-effekter */
+            background: '#0a0a0c', /* Dyb, kold sort */
+            surface: 'rgba(255, 255, 255, 0.04)',
+            surfaceHover: 'rgba(255, 255, 255, 0.08)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React, ReactDOM, and Framer Motion via Import Maps -->
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "framer-motion": "https://esm.sh/framer-motion@10.16.4?deps=react@18.2.0",
+        "lucide-react": "https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0"
+      }
+    }
+  </script>
+
+  <!-- Babel Standalone to compile JSX in browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+</head>
+
+<body class="bg-background text-white antialiased overflow-hidden selection:bg-primary/30 h-screen w-screen relative">
+
+  <!-- Blured background blobs: Meget underspillede, neutralt lys ind bagfra -->
+  <div
+    class="absolute top-[-15%] left-[-10%] w-[55%] h-[55%] bg-primary/20 rounded-full blur-[120px] pointer-events-none opacity-[0.25]">
+  </div>
+  <div
+    class="absolute bottom-[-15%] right-[-10%] w-[65%] h-[65%] bg-accent/20 rounded-full blur-[140px] pointer-events-none opacity-[0.25]">
+  </div>
+
+  <div id="root" class="h-full w-full relative z-10 flex flex-col"></div>
+
+  <!-- Load App -->
+  <script type="text/babel" data-type="module" src="app.jsx"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(registration => {
+          console.log('SW registered: ', registration);
+        }).catch(registrationError => {
+          console.log('SW registration failed: ', registrationError);
+        });
+      });
+    }
+  </script>
+</body>
+
+</html>
