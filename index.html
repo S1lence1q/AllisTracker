@@ -9,7 +9,7 @@
 
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0d0d12">
+  <meta name="theme-color" content="#0a0a0c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -35,8 +35,8 @@
             primary: '#ff3f00',   /* International Orange (Streetwear/Premium Vibe) */
             accent: '#ff5c28',    /* Lysere orange til hover-effekter */
             background: '#0a0a0c', /* Dyb, kold sort */
-            surface: 'rgba(255, 255, 255, 0.04)',
-            surfaceHover: 'rgba(255, 255, 255, 0.08)'
+            surface: 'rgba(255, 255, 255, 0.02)', /* Meget svag hvid for en næsten usynlig kant */
+            surfaceHover: 'rgba(255, 255, 255, 0.05)'
           }
         }
       }
@@ -64,10 +64,10 @@
 
   <!-- Blured background blobs: Meget underspillede, neutralt lys ind bagfra -->
   <div
-    class="absolute top-[-15%] left-[-10%] w-[55%] h-[55%] bg-primary/20 rounded-full blur-[120px] pointer-events-none opacity-[0.25]">
+    class="absolute top-[-15%] left-[-10%] w-[55%] h-[55%] bg-primary/20 rounded-full blur-[140px] pointer-events-none opacity-[0.10]">
   </div>
   <div
-    class="absolute bottom-[-15%] right-[-10%] w-[65%] h-[65%] bg-accent/20 rounded-full blur-[140px] pointer-events-none opacity-[0.25]">
+    class="absolute bottom-[-15%] right-[-10%] w-[65%] h-[65%] bg-accent/20 rounded-full blur-[160px] pointer-events-none opacity-[0.10]">
   </div>
 
   <div id="root" class="h-full w-full relative z-10 flex flex-col"></div>
