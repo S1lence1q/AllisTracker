@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Quote, Plus, X, HandMetal, Hash } from 'lucide-react';
+import { Quote, Plus, X, HandMetal, Hash, Trash2, Edit2, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
 
 // Custom hook til LocalStorage
 function useLocalStorage(key, initialValue) {
@@ -35,7 +35,9 @@ const App = () => {
     { id: 1, text: "Man skal bare tænke som en fisk, så går det hele.", date: new Date().toLocaleDateString() }
   ]);
   const [isAddingQuote, setIsAddingQuote] = useState(false);
+  const [editingQuoteId, setEditingQuoteId] = useState(null);
   const [newQuoteText, setNewQuoteText] = useState("");
+  const [isQuotesExpanded, setIsQuotesExpanded] = useState(false);
   const inputRef = useRef(null);
 
   // Auto-fokus på input når modal åbner
@@ -60,14 +62,39 @@ const App = () => {
     e.preventDefault();
     if (!newQuoteText.trim()) return;
 
-    setQuotes([{
-      id: Date.now(),
-      text: newQuoteText,
-      date: new Date().toLocaleDateString()
-    }, ...quotes]);
+    if (editingQuoteId) {
+      setQuotes(quotes.map(q =>
+        q.id === editingQuoteId ? { ...q, text: newQuoteText } : q
+      ));
+    } else {
+      setQuotes([{
+        id: Date.now(),
+        text: newQuoteText,
+        date: new Date().toLocaleDateString()
+      }, ...quotes]);
+    }
 
     setNewQuoteText("");
     setIsAddingQuote(false);
+    setEditingQuoteId(null);
+  };
+
+  const deleteQuote = (id) => {
+    if (window.confirm("Sikker på du vil slette dette citat?")) {
+      setQuotes(quotes.filter(q => q.id !== id));
+    }
+  };
+
+  const openAddModal = () => {
+    setEditingQuoteId(null);
+    setNewQuoteText("");
+    setIsAddingQuote(true);
+  };
+
+  const openEditModal = (quote) => {
+    setEditingQuoteId(quote.id);
+    setNewQuoteText(quote.text);
+    setIsAddingQuote(true);
   };
 
   return (
@@ -114,42 +141,74 @@ const App = () => {
       </div>
 
       {/* QUOTES SEKTION (BUND) */}
-      <div className="w-full h-[35%] min-h-[250px] relative z-20 flex flex-col">
-        <div className="flex justify-between items-end mb-4 px-2">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Quote size={20} className="text-accent/80" /> Citater
-          </h2>
-          <button
-            onClick={() => setIsAddingQuote(true)}
-            className="w-10 h-10 rounded-full bg-surface hover:bg-surfaceHover border border-white/5 flex items-center justify-center text-white/70 active:scale-95 transition-all duration-300"
-          >
-            <Plus size={20} />
-          </button>
+      <motion.div
+        animate={{ height: isQuotesExpanded ? '40%' : '14%' }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className="w-full absolute bottom-0 left-0 bg-[#060608]/90 border-t border-white/10 rounded-t-[40px] pt-6 pb-8 px-6 flex flex-col z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]"
+      >
+        <div className="flex justify-between items-center mb-4 px-2 cursor-pointer" onClick={() => setIsQuotesExpanded(!isQuotesExpanded)}>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Quote size={20} className="text-white/40" /> Citater
+            </h2>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isQuotesExpanded) setIsQuotesExpanded(true);
+                openAddModal();
+              }}
+              className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-white/70 active:scale-95 transition-all duration-300"
+            >
+              <Plus size={20} />
+            </button>
+            <button className="text-white/40 hover:text-white transition-colors">
+              {isQuotesExpanded ? <ChevronDown size={28} /> : <ChevronUp size={28} />}
+            </button>
+          </div>
         </div>
 
         {/* Swipebar Karrusel */}
-        <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar flex-1 items-stretch">
-          <AnimatePresence>
-            {quotes.map((quote) => (
-              <motion.div
-                key={quote.id}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="snap-center shrink-0 w-[82%] max-w-[320px] h-full bg-surface border border-white/5 backdrop-blur-xl rounded-[32px] p-7 flex flex-col justify-center relative shadow-[0_20px_40px_rgba(0,0,0,0.2)]"
-              >
-                <Quote size={40} className="absolute top-5 left-5 text-white/[0.03]" />
-                <p className="text-[1.35rem] leading-[1.4] font-medium mb-5 relative z-10 text-white/90 font-light tracking-wide">
-                  "{quote.text}"
-                </p>
-                <div className="text-[10px] text-white/40 mt-auto uppercase tracking-widest font-semibold flex items-center justify-between">
-                  <span>Allis</span> <span>{quote.date}</span>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </div>
+        <AnimatePresence>
+          {isQuotesExpanded && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="flex gap-4 overflow-x-auto pb-4 pt-2 snap-x snap-mandatory hide-scrollbar flex-1 items-stretch"
+            >
+              {quotes.map((quote) => (
+                <motion.div
+                  key={quote.id}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="snap-center shrink-0 w-[82%] max-w-[320px] h-full bg-[#121214] hover:bg-[#1a1a1c] transition-colors border border-white/10 rounded-[32px] p-7 flex flex-col justify-center relative shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                >
+                  <Quote size={40} className="absolute top-5 left-5 text-white/[0.03]" />
+                  <p className="text-[1.35rem] leading-[1.4] font-medium mb-5 relative z-10 text-white/90 font-light tracking-wide mt-4 pr-14">
+                    "{quote.text}"
+                  </p>
+
+                  <div className="absolute top-4 right-4 flex gap-1 bg-[#0a0a0c] border border-white/10 rounded-xl p-1 z-20 shadow-lg">
+                    <button onClick={() => openEditModal(quote)} className="text-white/40 hover:text-white transition-colors p-2 active:scale-90">
+                      <Edit2 size={16} />
+                    </button>
+                    <button onClick={() => deleteQuote(quote.id)} className="text-white/40 hover:text-red-500 transition-colors p-2 active:scale-90">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+
+                  <div className="text-[10px] text-white/40 mt-auto uppercase tracking-widest font-semibold flex items-center justify-between">
+                    <span>Allis</span> <span>{quote.date}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* TILFØJ CITAT MODAL */}
       <AnimatePresence>
@@ -165,16 +224,21 @@ const App = () => {
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 10, opacity: 0 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              className="w-full max-w-sm bg-background/95 border border-white/10 backdrop-blur-3xl rounded-[32px] p-7 relative shadow-[0_30px_60px_rgba(0,0,0,0.6)]"
+              className="w-full max-w-sm bg-[#0a0a0c] border border-white/10 rounded-[32px] p-7 relative shadow-[0_30px_60px_rgba(0,0,0,0.8)]"
             >
               <button
-                onClick={() => setIsAddingQuote(false)}
+                onClick={() => {
+                  setIsAddingQuote(false);
+                  setEditingQuoteId(null);
+                }}
                 className="absolute top-4 right-4 text-white/50 bg-white/5 rounded-full p-2"
               >
                 <X size={20} />
               </button>
 
-              <h3 className="text-xl font-bold tracking-wide mb-6 text-white">Nyt Citat</h3>
+              <h3 className="text-xl font-bold tracking-wide mb-6 text-white">
+                {editingQuoteId ? "Ret Citat" : "Nyt Citat"}
+              </h3>
 
               <form onSubmit={saveQuote}>
                 <textarea
@@ -190,7 +254,7 @@ const App = () => {
                   disabled={!newQuoteText.trim()}
                   className="w-full py-4 rounded-2xl bg-primary hover:bg-accent text-white font-bold tracking-widest text-lg uppercase shadow-none disabled:opacity-40 disabled:scale-100 transition-colors duration-300"
                 >
-                  Gem Citat
+                  {editingQuoteId ? "Gem Ændring" : "Gem Citat"}
                 </button>
               </form>
             </motion.div>
